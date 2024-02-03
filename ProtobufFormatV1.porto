@@ -1,0 +1,43 @@
+syntax = "proto2";
+package ProtoGuiCore;
+
+option csharp_namespace = "ProtobufCore";
+
+message UnknownMessage
+{
+	required string Answer = 1;
+}
+
+message Item
+{
+	required uint32 id = 1;
+	required string Name = 2;
+	
+}
+
+message RequestData
+{
+}
+
+message ClientMessage 
+{
+    oneof msg 
+    {
+        RequestData requestData = 2;
+		UnknownMessage unknownMessage = 3;
+    }   
+}
+
+message DataInfo
+{
+	repeated Item items = 1;
+}
+
+message ServerMessage 
+{
+    oneof msg
+    {
+        DataInfo dataInfo = 2;
+        UnknownMessage unknownMessage = 3;
+    }   
+}
