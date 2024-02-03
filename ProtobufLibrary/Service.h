@@ -24,29 +24,34 @@ namespace ProtobufLibrary
 		{
 			std::cout << "Recived Message\n";
 			ProtoGuiCore::ClientMessage message;
+			ProtoGuiCore::ServerMessage answer;
 			if (message.ParseFromArray(data, length))
 			{
 				if (message.has_requestdata())
 				{
 					std::cout << "Recived RequestData Message\n";
-					auto data_info = std::make_unique<ProtoGuiCore::DataInfo>();
+					auto data_info = answer.mutable_datainfo();
 					for (int k = 0; k < 10; k++)
 					{
 						auto item = data_info->add_items();
 						item->set_id(k);
 						item->set_name("Item " + std::to_string(k));
 					}
-
-					auto answer = ProtoGuiCore::ServerMessage();
-					answer.set_allocated_datainfo(data_info.release());
-					auto return_msg = answer.SerializeAsString();
-					
-					std::cout << "Call Callback\n";
-					m_callback(
-						return_msg.c_str(),
-						return_msg.size()
-					);
 				}
+				else
+				{
+					std::cout << "Recived Unknown Message\n";
+					auto errorMessage = answer.mutable_unknownmessage();
+					errorMessage->set_answer("Invalid Servier Request");
+				}
+
+
+				auto return_msg = answer.SerializeAsString();
+				std::cout << "Call Callback\n";
+				m_callback(
+					return_msg.c_str(),
+					return_msg.size()
+				);
 			}
 		}
 
