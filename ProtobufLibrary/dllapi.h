@@ -2,23 +2,47 @@
 #include "Service.h"
 #include <cinttypes>
 
+namespace
+{
+	struct Buffer
+	{
+		char const* Data;
+		int Lenght;
+	};
+}
 
 extern "C" __declspec(dllexport) ProtobufLibrary::Service* __stdcall start_service()
 {
 	return new ProtobufLibrary::Service();
 }
 
-extern "C" __declspec(dllexport) void __stdcall set_callback(
-	ProtobufLibrary::Service* servcie,
-	ProtobufLibrary::Service::MessageCallback callback
+extern "C" __declspec(dllexport) void __stdcall send_message(
+	ProtobufLibrary::Service* service,
+	Buffer message
 )
 {
-	servcie->SetCallback(callback);
+	service->HandelMessage(message.Data, message.Lenght);
 }
 
-extern "C" __declspec(dllexport) void __stdcall send_message(ProtobufLibrary::Service* service, uint8_t const* data, int length)
+extern "C" __declspec(dllexport) bool __stdcall get_response(
+	ProtobufLibrary::Service * service,
+	Buffer& response
+)
 {
-	service->HandelMessage(data, length);
+	auto answer = service->GetResponse();
+	if (answer == nullptr)
+		return false;
+
+	response.Data = answer->c_str();
+	response.Lenght = answer->size();
+	return true;
+}
+
+extern "C" __declspec(dllexport) void __stdcall pop_response(
+	ProtobufLibrary::Service * service
+)
+{
+	service->PopResponse();
 }
 
 extern "C" __declspec(dllexport) void __stdcall release_service(ProtobufLibrary::Service* service)

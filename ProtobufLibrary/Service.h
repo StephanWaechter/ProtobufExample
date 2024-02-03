@@ -3,6 +3,7 @@
 #include <cinttypes>
 #include <sstream>
 #include <iostream>
+#include <queue>
 
 namespace ProtobufLibrary
 {
@@ -14,13 +15,7 @@ namespace ProtobufLibrary
 			std::cout << "Created Servie\n";
 		}
 
-		typedef void (*MessageCallback)(char const* data, int lenth);
-		void SetCallback(MessageCallback callback)
-		{
-			m_callback = callback;
-		}
-
-		void HandelMessage(uint8_t const* data, int length)
+		void HandelMessage(char const* data, int length)
 		{
 			std::cout << "Recived Message\n";
 			ProtoGuiCore::ClientMessage message;
@@ -45,17 +40,24 @@ namespace ProtobufLibrary
 					errorMessage->set_answer("Invalid Servier Request");
 				}
 
-
-				auto return_msg = answer.SerializeAsString();
-				std::cout << "Call Callback\n";
-				m_callback(
-					return_msg.c_str(),
-					return_msg.size()
-				);
+				Answers.push(answer.SerializeAsString());
+				return;
 			}
 		}
 
+		std::string const* GetResponse() const
+		{
+			if (Answers.empty())
+				return nullptr;
+			return &Answers.front();
+		}
+
+		void PopResponse()
+		{
+			Answers.pop();
+		}
+
 	private:
-		MessageCallback m_callback;
+		std::queue<std::string> Answers;
 	};
 }

@@ -7,11 +7,17 @@ using System.Threading.Tasks;
 
 namespace ProtobufCore
 {
+    public interface IBufferMessenger
+    {
+        void SendMessage(byte[] data);
+        byte[]? GetResponse();
+    }
+
     public class Service
     {
-        public Service() 
+        public Service(IBufferMessenger messenger) 
         {
-            messenger.MessageRecived += MessageHandler;
+            this.messenger = messenger;
         }
 
         public delegate void DataInfoHandler(DataInfo message);
@@ -26,23 +32,26 @@ namespace ProtobufCore
 
         private void SendMessage(IMessage message)
         {
-            messenger.Send(message.ToByteArray());
+            messenger.SendMessage(message.ToByteArray());
+            while (MessageHandler(messenger.GetResponse())) { };
         }
 
-        private void MessageHandler(byte[] data)
+        private bool MessageHandler(byte[]? data)
         {
+            if (data == null)
+                return true;
             var message = ServerMessage.Parser.ParseFrom(data);
             if (message.DataInfo != null)
             {
                 RequestDataRecived.Invoke(message.DataInfo);
-                return;
-            } else if (message.UnknownMessage != null)
+            } 
+            else if (message.UnknownMessage != null)
             {
 
             }
-
+            return false;
         }
 
-        private Messenger messenger = new();
+        private IBufferMessenger messenger;
     }
 }
