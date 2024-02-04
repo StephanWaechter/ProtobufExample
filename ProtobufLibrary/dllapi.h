@@ -1,5 +1,5 @@
 #pragma once
-#include "Service.h"
+#include "Server.h"
 #include <cinttypes>
 
 namespace
@@ -11,25 +11,27 @@ namespace
 	};
 }
 
-extern "C" __declspec(dllexport) ProtobufLibrary::Service* __stdcall start_service()
+extern "C" __declspec(dllexport) MessengerServer::Messenger* __stdcall start_service()
 {
-	return new ProtobufLibrary::Service();
+	return new MessengerServer::MemoryMessenger();
 }
 
 extern "C" __declspec(dllexport) void __stdcall send_message(
-	ProtobufLibrary::Service* service,
+	MessengerServer::Messenger * server,
 	Buffer message
 )
 {
-	service->HandelMessage(message.Data, message.Lenght);
+	server->AddResponse(
+		ProtobufLibrary::HandelMessage(message.Data, message.Lenght)
+	);
 }
 
 extern "C" __declspec(dllexport) bool __stdcall get_response(
-	ProtobufLibrary::Service * service,
+	MessengerServer::Messenger* server,
 	Buffer& response
 )
 {
-	auto answer = service->GetResponse();
+	auto answer = server->GetResponse();
 	if (answer == nullptr)
 		return false;
 
@@ -39,13 +41,13 @@ extern "C" __declspec(dllexport) bool __stdcall get_response(
 }
 
 extern "C" __declspec(dllexport) void __stdcall pop_response(
-	ProtobufLibrary::Service * service
+	MessengerServer::Messenger* server
 )
 {
-	service->PopResponse();
+	server->PopResponse();
 }
 
-extern "C" __declspec(dllexport) void __stdcall release_service(ProtobufLibrary::Service* service)
+extern "C" __declspec(dllexport) void __stdcall release_service(MessengerServer::Messenger* server)
 {
-	delete service;
+	delete server;
 }

@@ -1,8 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 Console.WriteLine("Hello, World!");
 
-using var messanger = new ProtobufCore.Messenger();
-var service = new ProtobufCore.Service(messanger);
+var service = new ProtobufCore.Client();
 service.RequestDataRecived += Service_RequestDataRecived;
 
 void Service_RequestDataRecived(ProtobufCore.DataInfo message)
